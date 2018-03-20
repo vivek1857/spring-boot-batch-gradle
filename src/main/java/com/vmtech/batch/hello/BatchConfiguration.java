@@ -61,9 +61,6 @@ public class BatchConfiguration {
         return writer;
     }
     
-    
-
-
     @Bean
     public Job importUserJob(JobCompletionNotificationListener listener) {
         return jobBuilderFactory.get("importUserJob")
