@@ -1,25 +1,24 @@
 package com.vmtech.batch.hello;
 
-import javax.sql.DataSource;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
-import org.springframework.batch.item.database.JdbcBatchItemWriter;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.support.CompositeItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 @Configuration
 @EnableBatchProcessing
@@ -31,8 +30,8 @@ public class BatchConfiguration {
     @Autowired
     public StepBuilderFactory stepBuilderFactory;
 
-    @Autowired
-    public DataSource dataSource;
+    //@Autowired
+    //public DataSource dataSource;
 
     // tag::readerwriterprocessor[]
     @Bean
@@ -54,18 +53,17 @@ public class BatchConfiguration {
     public PersonItemProcessor processor() {
         return new PersonItemProcessor();
     }
-
+   
     @Bean
-    public JdbcBatchItemWriter<Person> writer() {
-        JdbcBatchItemWriter<Person> writer = new JdbcBatchItemWriter<Person>();
-        writer.setItemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<Person>());
-        writer.setSql("INSERT INTO people (first_name, last_name) VALUES (:firstName, :lastName)");
-        writer.setDataSource(dataSource);
+    public CompositeItemWriter<Person> writer() {
+    	CompositeItemWriter<Person> writer = new CompositeItemWriter<Person>();
+    	writer.setDelegates(Arrays.asList(writerOne(),writerTwo()));
         return writer;
     }
-    // end::readerwriterprocessor[]
+    
+    
 
-    // tag::jobstep[]
+
     @Bean
     public Job importUserJob(JobCompletionNotificationListener listener) {
         return jobBuilderFactory.get("importUserJob")
@@ -85,5 +83,26 @@ public class BatchConfiguration {
                 .writer(writer())
                 .build();
     }
-    // end::jobstep[]
+    public ItemWriter<Person> writerOne(){
+        ItemWriter<Person> writer = new ItemWriter<Person>() {
+
+			@Override
+			public void write(List<? extends Person> items) throws Exception {
+				// TODO Auto-generated method stub
+				
+			}};
+        //your logic here
+        return writer;
+    }
+
+    public ItemWriter<Person> writerTwo(){
+        ItemWriter<Person> writer =  new ItemWriter<Person>() {
+
+			@Override
+			public void write(List<? extends Person> items) throws Exception {
+				// TODO Auto-generated method stub
+				
+			}};
+        return writer;
+    }
 }
