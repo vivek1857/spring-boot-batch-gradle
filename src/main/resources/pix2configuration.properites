@@ -1,0 +1,3 @@
+pix2.columnNumbers=1,2,3,4,5
+pix2.name=test
+logging.level.org.springframework.web=DEBUG

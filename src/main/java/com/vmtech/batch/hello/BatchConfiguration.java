@@ -9,6 +9,7 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.scope.context.SynchronizationManagerSupport;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
@@ -16,9 +17,12 @@ import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.batch.item.support.CompositeItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+
+import ch.qos.logback.core.net.SyslogOutputStream;
 
 @Configuration
 @EnableBatchProcessing
@@ -29,7 +33,7 @@ public class BatchConfiguration {
 
     @Autowired
     public StepBuilderFactory stepBuilderFactory;
-
+    
     //@Autowired
     //public DataSource dataSource;
 
@@ -40,7 +44,11 @@ public class BatchConfiguration {
         reader.setResource(new ClassPathResource("sample-data.csv"));
         reader.setLineMapper(new DefaultLineMapper<Person>() {{
             setLineTokenizer(new DelimitedLineTokenizer() {{
+            	
+                setIncludedFields(new int[] {1,3});
                 setNames(new String[] { "firstName", "lastName" });
+                //setStrict(false);
+                
             }});
             setFieldSetMapper(new BeanWrapperFieldSetMapper<Person>() {{
                 setTargetType(Person.class);
@@ -57,7 +65,7 @@ public class BatchConfiguration {
     @Bean
     public CompositeItemWriter<Person> writer() {
     	CompositeItemWriter<Person> writer = new CompositeItemWriter<Person>();
-    	writer.setDelegates(Arrays.asList(writerOne(),writerTwo()));
+    	writer.setDelegates(Arrays.asList(writerOne()));
         return writer;
     }
     
@@ -81,25 +89,17 @@ public class BatchConfiguration {
                 .build();
     }
     public ItemWriter<Person> writerOne(){
+    	
         ItemWriter<Person> writer = new ItemWriter<Person>() {
 
 			@Override
 			public void write(List<? extends Person> items) throws Exception {
-				// TODO Auto-generated method stub
+				for(Person person:items) {
+					System.out.println(person.toString());
+				}
 				
 			}};
-        //your logic here
-        return writer;
-    }
-
-    public ItemWriter<Person> writerTwo(){
-        ItemWriter<Person> writer =  new ItemWriter<Person>() {
-
-			@Override
-			public void write(List<? extends Person> items) throws Exception {
-				// TODO Auto-generated method stub
-				
-			}};
+			
         return writer;
     }
 }
